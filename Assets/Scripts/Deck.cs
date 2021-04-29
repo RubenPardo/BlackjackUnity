@@ -34,6 +34,23 @@ public class Deck : MonoBehaviour
          * En principio, la posición de cada valor se deberá corresponder con la posición de faces. 
          * Por ejemplo, si en faces[1] hay un 2 de corazones, en values[1] debería haber un 2.
          */
+        int contCardValues = 0;
+        for(int i=1;i<=4; i++)
+        {
+            for (int j = 1; j <= 13; j++)
+            {
+                if (j > 10)
+                {
+                    values[contCardValues++] = 10;
+                }
+                else
+                {
+                    values[contCardValues++] = j;
+                }
+            }
+        }
+
+
     }
 
     private void ShuffleCards()
