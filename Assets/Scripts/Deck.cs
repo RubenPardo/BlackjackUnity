@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -93,6 +94,9 @@ public class Deck : MonoBehaviour
 
     void StartGame()
     {
+        hitButton.enabled = true;
+        stickButton.enabled = true;
+
         for (int i = 0; i < 2; i++)
         {
             PushPlayer();
@@ -100,7 +104,25 @@ public class Deck : MonoBehaviour
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
              */
+            if (comprobarBlackJackJugador())
+            {
+                endGame(true);
+
+            }else if (comprobarBlackJackDealer())
+            {
+                endGame(false);
+            }
         }
+    }
+
+    private bool comprobarBlackJackJugador()
+    {
+        return player.GetComponent<CardHand>().points == 21;
+    }
+
+    private bool comprobarBlackJackDealer()
+    {
+        return dealer.GetComponent<CardHand>().points == 21;
     }
 
     private void CalculateProbabilities()
@@ -193,13 +215,35 @@ public class Deck : MonoBehaviour
          * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
          */
         
+        
         //Repartimos carta al jugador
         PushPlayer();
 
         /*TODO:
          * Comprobamos si el jugador ya ha perdido y mostramos mensaje
-         */      
+         */
+        if (player.GetComponent<CardHand>().points > 21)
+        {
+            endGame(false);
 
+        }
+
+        if (comprobarBlackJackJugador())
+        {
+            endGame(true);
+        }
+
+    }
+
+        private void endGame(bool victoria)
+    {
+        
+        finalMessage.text = victoria ? "Has ganado" : "Has perdido" ;
+
+       
+      
+        hitButton.enabled = false;
+        stickButton.enabled = false;
     }
 
     public void Stand()
@@ -212,7 +256,33 @@ public class Deck : MonoBehaviour
          * Repartimos cartas al dealer si tiene 16 puntos o menos
          * El dealer se planta al obtener 17 puntos o más
          * Mostramos el mensaje del que ha ganado
-         */                
+         */
+
+        Debug.Log("STAND--------------------: " + dealer.GetComponent<CardHand>().points);
+        while (dealer.GetComponent<CardHand>().points < 17)
+        {
+            PushDealer();
+
+            Debug.Log("Puntos dealer: " + dealer.GetComponent<CardHand>().points);
+        }
+
+        // si tienes mas puntos que el ganas
+        if(dealer.GetComponent<CardHand>().points < player.GetComponent<CardHand>().points)
+        {
+            endGame(true);
+        }
+        else
+        {
+            // si empatas u obtienes menos pierdes, pero si se pasa de 21 ganas
+            if(dealer.GetComponent<CardHand>().points < 21)
+            {
+                endGame(false);
+            }
+            else
+            {
+                endGame(true);
+            }
+        }
          
     }
 
