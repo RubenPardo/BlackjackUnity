@@ -94,13 +94,12 @@ public class Deck : MonoBehaviour
 
     void StartGame()
     {
-        hitButton.enabled = true;
-        stickButton.enabled = true;
 
         for (int i = 0; i < 2; i++)
         {
             PushPlayer();
             PushDealer();
+            voltearCartaDealer(false);
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
              */
@@ -113,6 +112,11 @@ public class Deck : MonoBehaviour
                 endGame(false);
             }
         }
+    }
+
+    private void voltearCartaDealer(bool v)
+    {
+        dealer.GetComponent<CardHand>().cards[0].GetComponent<CardModel>().ToggleFace(v);
     }
 
     private bool comprobarBlackJackJugador()
@@ -235,15 +239,13 @@ public class Deck : MonoBehaviour
 
     }
 
-        private void endGame(bool victoria)
+    private void endGame(bool victoria)
     {
-        
+        voltearCartaDealer(true);
         finalMessage.text = victoria ? "Has ganado" : "Has perdido" ;
-
-       
       
-        hitButton.enabled = false;
-        stickButton.enabled = false;
+        hitButton.interactable = false;
+        stickButton.interactable = false;
     }
 
     public void Stand()
@@ -251,7 +253,7 @@ public class Deck : MonoBehaviour
         /*TODO: 
          * Si estamos en la mano inicial, debemos voltear la primera carta del dealer.
          */
-
+        
         /*TODO:
          * Repartimos cartas al dealer si tiene 16 puntos o menos
          * El dealer se planta al obtener 17 puntos o más
