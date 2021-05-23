@@ -185,13 +185,44 @@ public class Deck : MonoBehaviour
             }
         }
 
-        Debug.Log("------------");
+        Debug.Log("------------ENTRE 17 Y 21");
         Debug.Log("Casos posibles: " + casosPosibles);
         Debug.Log("Casos favorables: " + contSumasEntre17_21);
         double prob = (contSumasEntre17_21/casosPosibles)*100;
         string prob17_21 = "Probabilidad de que el jugador obtenga entre un 17 y un 21 si pide una carta: " + prob;
         probMessage.text = prob17_21;
-       
+
+
+        //Probabilidad de que el jugador obtenga más de 21 si pide una carta
+        int casosFavMas21 = 0;
+        // casos favorables todas aquellas sumas que sobre pasen el 21
+        for (int i = cardIndex; i < values.Length; i++)
+        {
+            suma = puntosJugador + values[i];
+            if (suma > 21)
+            {
+
+                casosFavMas21++;
+            }
+
+            // si el valor 1 contemplar el 11
+            if (values[i] == 1)
+            {
+                suma = puntosJugador + 11;
+                if (suma >21)
+                {
+                    casosFavMas21++;
+                }
+            }
+        }
+
+        Debug.Log("------------ MAS DE 21");
+        Debug.Log("Casos posibles: " + casosPosibles);
+        Debug.Log("Casos favorables: " + casosFavMas21);
+        double prob2 = (casosFavMas21 / casosPosibles) * 100;
+        string probMas21 = "\nProbabilidad de que el jugador obtenga mas de 21 si pide carta: " + prob2;
+        probMessage.text += probMas21;
+
     }
 
     void PushDealer()
