@@ -121,12 +121,51 @@ public class Deck : MonoBehaviour
 
     private bool comprobarBlackJackJugador()
     {
-        return player.GetComponent<CardHand>().points == 21;
+        
+        if (player.GetComponent<CardHand>().points == 21)
+        {
+            return true;
+        }
+        else
+        {
+            // si hay un 1 comprobar si con el 11 hace 21
+            foreach(GameObject carta in player.GetComponent<CardHand>().cards)
+            {
+                if(carta.GetComponent<CardModel>().value == 1)
+                {
+                    if(((player.GetComponent<CardHand>().points-1) + 11 )== 21)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private bool comprobarBlackJackDealer()
     {
-        return dealer.GetComponent<CardHand>().points == 21;
+        if (dealer.GetComponent<CardHand>().points == 21)
+        {
+            return true;
+        }
+        else
+        {
+            // si hay un 1 comprobar si con el 11 hace 21
+            foreach (GameObject carta in dealer.GetComponent<CardHand>().cards)
+            {
+                if (carta.GetComponent<CardModel>().value == 1)
+                {
+                    if (((dealer.GetComponent<CardHand>().points - 1) + 11) == 21)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private void CalculateProbabilities()
@@ -304,9 +343,14 @@ public class Deck : MonoBehaviour
         {
             endGame(true);
         }
+        else if (dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
+        {
+            // empate
+            empate();
+        }
         else
         {
-            // si empatas u obtienes menos pierdes, pero si se pasa de 21 ganas
+            // si obtienes menos pierdes, pero si se pasa de 21 ganas
             if(dealer.GetComponent<CardHand>().points < 21)
             {
                 endGame(false);
@@ -317,6 +361,14 @@ public class Deck : MonoBehaviour
             }
         }
          
+    }
+
+    private void empate()
+    {
+        voltearCartaDealer(true);
+        finalMessage.text = "Empate";
+        hitButton.interactable = false;
+        stickButton.interactable = false;
     }
 
     public void PlayAgain()
