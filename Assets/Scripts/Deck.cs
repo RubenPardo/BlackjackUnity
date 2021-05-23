@@ -115,8 +115,8 @@ public class Deck : MonoBehaviour
 
         for (int i = 0; i < 2; i++)
         {
-            PushPlayer();
             PushDealer();
+            PushPlayer();
             voltearCartaDealer(false);
             /*TODO:
              * Si alguno de los dos obtiene Blackjack, termina el juego y mostramos mensaje
@@ -239,9 +239,7 @@ public class Deck : MonoBehaviour
             }
         }
 
-        Debug.Log("------------ENTRE 17 Y 21");
-        Debug.Log("Casos posibles: " + casosPosibles);
-        Debug.Log("Casos favorables: " + contSumasEntre17_21);
+    
         double prob = (contSumasEntre17_21/casosPosibles)*100;
         string prob17_21 = "Probabilidad de que el jugador obtenga entre un 17 y un 21 si pide una carta: " + prob;
         probMessage.text = prob17_21;
@@ -270,12 +268,59 @@ public class Deck : MonoBehaviour
             }
         }
 
-        Debug.Log("------------ MAS DE 21");
-        Debug.Log("Casos posibles: " + casosPosibles);
-        Debug.Log("Casos favorables: " + casosFavMas21);
         double prob2 = (casosFavMas21 / casosPosibles) * 100;
         string probMas21 = "\nProbabilidad de que el jugador obtenga mas de 21 si pide carta: " + prob2;
         probMessage.text += probMas21;
+
+
+        //Teniendo la carta oculta, probabilidad de que el dealer tenga más puntuación que el jugador
+        if (dealerCards.Count > 1) // contar a partir de las dos cartas repartidas iniciales
+        {
+           
+            int casosFavDealerMasPuntuacion = 0;
+            int puntosDestapadosDealer = dealerCards[1].value;
+
+            
+
+            // casos favorables todas aquellas sumas que sobre pasen el 21
+            for (int i = cardIndex; i < values.Length; i++)
+            {
+                suma = puntosDestapadosDealer + values[i];
+
+                if (suma > puntosJugador && suma < 21)
+                {
+
+                    casosFavDealerMasPuntuacion++;
+                }
+
+                // si el valor de la nueva es 1 contemplar el 11
+                if (values[i] == 1)
+                {
+                    suma = puntosDestapadosDealer + 11;
+                    if (suma > puntosJugador && suma < 21)
+                    {
+                        casosFavDealerMasPuntuacion++;
+                    }
+                }
+
+                // si la carta es 1
+                if (puntosDestapadosDealer == 1)
+                {
+                    suma = 11 + values[i];
+
+                    if (suma > puntosJugador && suma < 21)
+                    {
+
+                        casosFavDealerMasPuntuacion++;
+                    }
+
+                }
+            }
+
+            double prob3 = (casosFavDealerMasPuntuacion / casosPosibles) * 100;
+            probMessage.text += "\nTeniendo la carta oculta, probabilidad de que el dealer tenga más puntuación que el jugador: " + prob3;
+        }
+       
 
     }
 
