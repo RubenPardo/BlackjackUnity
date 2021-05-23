@@ -15,10 +15,20 @@ public class Deck : MonoBehaviour
     public Text finalMessage;
     public Text probMessage;
 
+    
 
     public int[] values = new int[52];
-    int cardIndex = 0;    
-       
+    int cardIndex = 0;
+
+
+    // apuesta
+    public Text apuestaActual;
+    public Text saldoActual;
+    public InputField inpApuesta;
+    public Button btnApostar;
+    private double apuesta;
+    private double saldo;
+
     private void Awake()
     {    
         InitCardValues();        
@@ -95,6 +105,11 @@ public class Deck : MonoBehaviour
     void StartGame()
     {
 
+        playAgainButton.interactable = false;
+        hitButton.interactable = false;
+        stickButton.interactable = false;
+        btnApostar.interactable = true;
+
         for (int i = 0; i < 2; i++)
         {
             PushPlayer();
@@ -105,11 +120,11 @@ public class Deck : MonoBehaviour
              */
             if (comprobarBlackJackJugador())
             {
-                endGame(true);
+                endGame(TipoFinPartida.Victoria);
 
             }else if (comprobarBlackJackDealer())
             {
-                endGame(false);
+                endGame(TipoFinPartida.Derrota);
             }
         }
     }
@@ -298,24 +313,42 @@ public class Deck : MonoBehaviour
          */
         if (player.GetComponent<CardHand>().points > 21)
         {
-            endGame(false);
+            endGame(TipoFinPartida.Derrota);
 
         }
 
         if (comprobarBlackJackJugador())
         {
-            endGame(true);
+            endGame(TipoFinPartida.Victoria);
         }
 
     }
 
-    private void endGame(bool victoria)
+    private void endGame(TipoFinPartida tipo)
     {
+        string strFinal = "";
+        switch (tipo)
+        {
+            case TipoFinPartida.Victoria:
+                strFinal = "Has ganado";
+                break;
+            case TipoFinPartida.Derrota:
+                strFinal = "Has perdido";
+                break;
+            case TipoFinPartida.Empate:
+                strFinal = "Empate";
+                break;
+        }
+
         voltearCartaDealer(true);
-        finalMessage.text = victoria ? "Has ganado" : "Has perdido" ;
+        finalMessage.text = strFinal;
+        finApuesta(tipo);
+        
       
-        hitButton.interactable = false;
-        stickButton.interactable = false;
+        playAgainButton.interactable = true;
+        hitButton.interactable = true;
+        stickButton.interactable = true;
+        btnApostar.interactable = false;
     }
 
     public void Stand()
@@ -330,51 +363,43 @@ public class Deck : MonoBehaviour
          * Mostramos el mensaje del que ha ganado
          */
 
-        Debug.Log("STAND--------------------: " + dealer.GetComponent<CardHand>().points);
+       
         while (dealer.GetComponent<CardHand>().points < 17)
         {
             PushDealer();
 
-            Debug.Log("Puntos dealer: " + dealer.GetComponent<CardHand>().points);
         }
 
         // si tienes mas puntos que el ganas
         if(dealer.GetComponent<CardHand>().points < player.GetComponent<CardHand>().points)
         {
-            endGame(true);
+            endGame(TipoFinPartida.Victoria);
         }
         else if (dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
         {
             // empate
-            empate();
+            endGame(TipoFinPartida.Empate);
         }
         else
         {
             // si obtienes menos pierdes, pero si se pasa de 21 ganas
             if(dealer.GetComponent<CardHand>().points < 21)
             {
-                endGame(false);
+                endGame(TipoFinPartida.Derrota);
             }
             else
             {
-                endGame(true);
+                endGame(TipoFinPartida.Victoria);
             }
         }
          
     }
 
-    private void empate()
-    {
-        voltearCartaDealer(true);
-        finalMessage.text = "Empate";
-        hitButton.interactable = false;
-        stickButton.interactable = false;
-    }
+  
 
     public void PlayAgain()
     {
-        hitButton.interactable = true;
-        stickButton.interactable = true;
+     
         finalMessage.text = "";
         player.GetComponent<CardHand>().Clear();
         dealer.GetComponent<CardHand>().Clear();          
@@ -383,4 +408,62 @@ public class Deck : MonoBehaviour
         StartGame();
     }
     
+
+    // Apostar--------------------------
+
+    private void finApuesta(TipoFinPartida tipo)
+    {
+      
+        double nuevoSaldo = 0.0;
+
+        switch (tipo)
+        {
+            case TipoFinPartida.Victoria:
+                nuevoSaldo = saldo + apuesta;
+                break;
+            case TipoFinPartida.Derrota:
+                nuevoSaldo = saldo - apuesta;
+                break;
+            case TipoFinPartida.Empate:
+                nuevoSaldo = saldo;
+                break;
+        }
+
+        saldoActual.text = nuevoSaldo.ToString();
+        apuestaActual.text = "0";
+        inpApuesta.interactable = true;
+        btnApostar.interactable = true;
+    }
+
+    public void IniciarApuesta()
+    {
+        apuesta = double.Parse(inpApuesta.text.ToString());
+        saldo = double.Parse(saldoActual.text.ToString());
+
+        saldoActual.text = (saldo - apuesta).ToString();
+        apuestaActual.text = apuesta.ToString();
+
+        inpApuesta.interactable = false;
+        inpApuesta.text = "";
+        btnApostar.interactable = false;
+
+        hitButton.interactable = true;
+        stickButton.interactable = true;
+
+
+    }
+
+    public void onInputApuestaChange()
+    {
+        // la apuesta no debe superar el saldo y no debe estar vacia
+        btnApostar.interactable =
+            !inpApuesta.text.ToString().Equals("") 
+             && double.Parse(inpApuesta.text.ToString()) <= double.Parse(saldoActual.text.ToString());
+            
+    }
+}
+
+public enum TipoFinPartida
+{
+    Victoria,Derrota,Empate
 }
