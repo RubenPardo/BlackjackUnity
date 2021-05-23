@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Deck : MonoBehaviour
@@ -108,7 +110,8 @@ public class Deck : MonoBehaviour
         playAgainButton.interactable = false;
         hitButton.interactable = false;
         stickButton.interactable = false;
-        btnApostar.interactable = true;
+        btnApostar.interactable = false;
+        inpApuesta.interactable = true;
 
         for (int i = 0; i < 2; i++)
         {
@@ -120,11 +123,8 @@ public class Deck : MonoBehaviour
              */
             if (comprobarBlackJackJugador())
             {
-                endGame(TipoFinPartida.Victoria);
+                endRonda(TipoFinPartida.Victoria);
 
-            }else if (comprobarBlackJackDealer())
-            {
-                endGame(TipoFinPartida.Derrota);
             }
         }
     }
@@ -313,18 +313,18 @@ public class Deck : MonoBehaviour
          */
         if (player.GetComponent<CardHand>().points > 21)
         {
-            endGame(TipoFinPartida.Derrota);
+            endRonda(TipoFinPartida.Derrota);
 
         }
 
         if (comprobarBlackJackJugador())
         {
-            endGame(TipoFinPartida.Victoria);
+            endRonda(TipoFinPartida.Victoria);
         }
 
     }
 
-    private void endGame(TipoFinPartida tipo)
+    private void endRonda(TipoFinPartida tipo)
     {
         string strFinal = "";
         switch (tipo)
@@ -341,14 +341,32 @@ public class Deck : MonoBehaviour
         }
 
         voltearCartaDealer(true);
-        finalMessage.text = strFinal;
         finApuesta(tipo);
-        
-      
-        playAgainButton.interactable = true;
-        hitButton.interactable = true;
-        stickButton.interactable = true;
+
+
+        hitButton.interactable = false;
+        inpApuesta.interactable = false;
+        stickButton.interactable = false;
         btnApostar.interactable = false;
+
+        // comprobar si ya no tienes saldo
+        if (saldo <= 0)
+        {
+            playAgainButton.interactable = false;
+            strFinal += ".\nNo tienes saldo, la partida se va a reiniciar.";
+            // sin saldo reiniciar partida
+            StartCoroutine(restartGame());
+        }
+        else
+        {
+            playAgainButton.interactable = true;
+            
+        }
+
+
+
+        finalMessage.text = strFinal;
+
     }
 
     public void Stand()
@@ -373,23 +391,23 @@ public class Deck : MonoBehaviour
         // si tienes mas puntos que el ganas
         if(dealer.GetComponent<CardHand>().points < player.GetComponent<CardHand>().points)
         {
-            endGame(TipoFinPartida.Victoria);
+            endRonda(TipoFinPartida.Victoria);
         }
         else if (dealer.GetComponent<CardHand>().points == player.GetComponent<CardHand>().points)
         {
             // empate
-            endGame(TipoFinPartida.Empate);
+            endRonda(TipoFinPartida.Empate);
         }
         else
         {
             // si obtienes menos pierdes, pero si se pasa de 21 ganas
             if(dealer.GetComponent<CardHand>().points < 21)
             {
-                endGame(TipoFinPartida.Derrota);
+                endRonda(TipoFinPartida.Derrota);
             }
             else
             {
-                endGame(TipoFinPartida.Victoria);
+                endRonda(TipoFinPartida.Victoria);
             }
         }
          
@@ -407,29 +425,35 @@ public class Deck : MonoBehaviour
         ShuffleCards();
         StartGame();
     }
-    
+
+
+    IEnumerator restartGame()
+    {
+        
+        yield return new WaitForSeconds(3);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+    }
 
     // Apostar--------------------------
 
     private void finApuesta(TipoFinPartida tipo)
     {
       
-        double nuevoSaldo = 0.0;
+     
 
         switch (tipo)
         {
             case TipoFinPartida.Victoria:
-                nuevoSaldo = saldo + apuesta;
+                saldo += apuesta;
                 break;
             case TipoFinPartida.Derrota:
-                nuevoSaldo = saldo - apuesta;
-                break;
-            case TipoFinPartida.Empate:
-                nuevoSaldo = saldo;
+                saldo -= apuesta;
                 break;
         }
 
-        saldoActual.text = nuevoSaldo.ToString();
+
+        saldoActual.text = saldo.ToString();
         apuestaActual.text = "0";
         inpApuesta.interactable = true;
         btnApostar.interactable = true;
